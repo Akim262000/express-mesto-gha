@@ -1,36 +1,33 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-
-const routes = require('./routes');
+const express = require("express");
+const mongoose = require("mongoose");
+const { ERROR_NOT_FOUND } = require("./utils/utils");
 
 const { PORT = 3000 } = process.env;
 
-mongoose.connect('mongodb://localhost:27017/mestodb', {
-  userNewUrlParser: true,
-  useCreateIndex: true,
-  userFindAndModify: false,
-});
-
 const app = express();
 
+mongoose.connect("mongodb://127.0.0.1:27017/mestodb", {
+  userNewUrlParser: true,
+  useCreateIndex: true,
+});
 
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 app.use((req, res, next) => {
   req.user = {
-    _id: "64ac3f685db2f90b7f2a6e8c"
+    _id: "64ad99c47af70d2a10ccdda4",
   };
 
   next();
 });
 
-// app.use('/', require('./routes/users'));
-// app.use('/', require('./routes/cards'));
+app.use("/", require("./routes/users"));
+app.use("/", require("./routes/cards"));
 
-app.use(routes);
+app.use((req, res) =>
+  res.status(ERROR_NOT_FOUND).send({ message: "Страница не найдена" })
+);
 
 app.listen(PORT, () => {
   console.log(`Application is running on port ${PORT}`);
