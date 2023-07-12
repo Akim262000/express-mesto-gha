@@ -1,9 +1,10 @@
 module.exports = {
     "env": {
-        "browser": true,
+        // "browser": true,
         "es2021": true
     },
-    "extends": "plugin:react/recommended",
+    "extends": "airbnb-base",
+    // "plugin:react/recommended",
     "overrides": [
         {
             "env": {

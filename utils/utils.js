@@ -1,3 +1,5 @@
+const ERROR_OK = 200;
+const ERROR_CREATE = 201;
 const ERROR_BAD_REQUEST = 400;
 const ERROR_NOT_FOUND = 404;
 const ERROR_INTERNAL_SERVER = 500;
@@ -23,6 +25,8 @@ const errorsHandler = (err, res) => {
 };
 
 module.exports = {
+  ERROR_OK,
+  ERROR_CREATE,
   ERROR_BAD_REQUEST,
   ERROR_NOT_FOUND,
   ERROR_INTERNAL_SERVER,

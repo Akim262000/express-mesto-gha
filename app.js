@@ -14,7 +14,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/mestodb", {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use((req, res, next) => {
+app.use((req, _res, next) => {
   req.user = {
     _id: "64ad99c47af70d2a10ccdda4",
   };
@@ -25,7 +25,7 @@ app.use((req, res, next) => {
 app.use("/", require("./routes/users"));
 app.use("/", require("./routes/cards"));
 
-app.use((req, res) =>
+app.use((_req, res) =>
   res.status(ERROR_NOT_FOUND).send({ message: "Страница не найдена" })
 );
 

@@ -1,10 +1,15 @@
 const Card = require("../models/card");
-const { errorsHandler, ERROR_NOT_FOUND } = require("../utils/utils");
+const {
+  ERROR_NOT_FOUND,
+  ERROR_OK,
+  ERROR_CREATE,
+  errorsHandler,
+} = require("../utils/utils");
 
 //Получение всех карточек из базы данных
-function getCards(req, res) {
+function getCards(_req, res) {
   Card.find({})
-    .then((cards) => res.status(200).send(cards))
+    .then((cards) => res.status(ERROR_OK).send(cards))
     .catch((err) => errorsHandler(err, res));
 }
 
@@ -13,7 +18,7 @@ function createCards(req, res) {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
-    .then((card) => res.status(200).send(card))
+    .then((card) => res.status(ERROR_CREATE).send(card))
     .catch((err) => errorsHandler(err, res));
 }
 
@@ -26,7 +31,7 @@ function deleteCard(req, res) {
           .status(ERROR_NOT_FOUND)
           .send({ message: "Карточка не найдена." });
       }
-      return res.status(200).send(card);
+      return res.status(ERROR_OK).send(card);
     })
     .catch((err) => errorsHandler(err, res));
 }
@@ -44,7 +49,7 @@ function likeCard(req, res) {
           .status(ERROR_NOT_FOUND)
           .send({ message: "Карточка не найдена." });
       }
-      return res.status(200).send(card);
+      return res.status(ERROR_OK).send(card);
     })
     .catch((err) => errorsHandler(err, res));
 }
@@ -62,7 +67,7 @@ function dislikeCard(req, res) {
           .status(ERROR_NOT_FOUND)
           .send({ message: "Карточка не найдена." });
       }
-      return res.status(200).send(card);
+      return res.status(ERROR_OK).send(card);
     })
     .catch((err) => errorsHandler(err, res));
 }

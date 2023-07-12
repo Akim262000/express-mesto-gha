@@ -1,11 +1,11 @@
 const User = require("../models/user");
 
-const { ERROR_NOT_FOUND, errorsHandler } = require("../utils/utils");
+const { ERROR_NOT_FOUND, ERROR_OK, ERROR_CREATE, errorsHandler } = require("../utils/utils");
 
 //Получение данных о всех пользователях
-function getUsers(req, res) {
+function getUsers(_req, res) {
   User.find({})
-    .then((users) => res.status(200).send(users))
+    .then((users) => res.status(ERROR_OK).send(users))
     .catch((err) => errorsHandler(err, res));
 }
 
@@ -18,7 +18,7 @@ function getUser(req, res) {
           .status(ERROR_NOT_FOUND)
           .send({ message: "Пользователь не найден" });
       }
-      return res.status(200).send(user);
+      return res.status(ERROR_OK).send(user);
     })
     .catch((err) => errorsHandler(err, res));
 }
@@ -27,7 +27,7 @@ function getUser(req, res) {
 function createUser(req, res) {
   const { name, about, avatar } = req.body;
   User.create({ name, about, avatar })
-    .then((user) => res.status(200).send(user))
+    .then((user) => res.status(ERROR_CREATE).send(user))
     .catch((err) => errorsHandler(err, res));
 }
 
@@ -39,7 +39,7 @@ function renovateUser(req, res) {
     { name, about },
     { new: true, runValidators: true }
   )
-    .then((user) => res.status(200).send(user))
+    .then((user) => res.status(ERROR_OK).send(user))
     .catch((err) => errorsHandler(err, res));
 }
 
@@ -51,7 +51,7 @@ function renovateUserAvatar(req, res) {
     { avatar },
     { new: true, runValidators: true }
   )
-    .then((user) => res.status(200).send(user))
+    .then((user) => res.status(ERROR_OK).send(user))
     .catch((err) => errorsHandler(err, res));
 }
 
