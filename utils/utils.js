@@ -15,6 +15,7 @@ const errorsHandler = (err, res) => {
       .status(ERROR_BAD_REQUEST)
       .send({ message: "Переданые данные некорректны." });
   }
+
   return res
     .status(ERROR_INTERNAL_SERVER)
     .send({ message: `Ошибка сервера ${ERROR_INTERNAL_SERVER}` });
