@@ -1,6 +1,13 @@
+const bcrypt = require("bcryptjs");
 const User = require("../models/user");
+const user = require("../models/user");
 
-const { ERROR_NOT_FOUND, ERROR_OK, ERROR_CREATE, errorsHandler } = require("../utils/utils");
+const {
+  ERROR_NOT_FOUND,
+  ERROR_OK,
+  ERROR_CREATE,
+  errorsHandler,
+} = require("../utils/utils");
 
 //Получение данных о всех пользователях
 function getUsers(_req, res) {
@@ -25,9 +32,26 @@ function getUser(req, res) {
 
 //Создание пользователя
 function createUser(req, res) {
-  const { name, about, avatar } = req.body;
-  User.create({ name, about, avatar })
-    .then((user) => res.status(ERROR_CREATE).send(user))
+  bcrypt
+    .hash(req.body.password, 10)
+    .then((hash) => {
+      return User.create({
+        email: req.body.email,
+        password: hash,
+        name: req.body.name,
+        about: req.body.about,
+        avatar: req.body.avatar,
+      });
+    })
+    .then((user) => {
+      return res.status(ERROR_CREATE).send({
+        name: user.name,
+        about: user.about,
+        avatar: user.avatar,
+        _id: user._id,
+        email: user.email,
+      });
+    })
     .catch((err) => errorsHandler(err, res));
 }
 
