@@ -19,14 +19,6 @@ app.use(express.urlencoded({ extended: true }));
 app.post('/signin', login);
 app.post('/signup', createUser);
 
-app.use((req, _res, next) => {
-  req.user = {
-    _id: "64ad99c47af70d2a10ccdda4",
-  };
-
-  next();
-});
-
 app.use("/", require("./routes/users"));
 app.use("/", require("./routes/cards"));
 
