@@ -14,9 +14,6 @@ router.get("/users", getUsers);
 //Получение данных о конкретном пользователе
 router.get("/users/:userId", getUser);
 
-//Создание пользователя
-router.post("/users", createUser);
-
 //Обновление данных пользователя
 router.patch("/users/me", renovateUser);
 
