@@ -1,6 +1,6 @@
 const bcrypt = require("bcryptjs");
 const User = require("../models/user");
-const user = require("../models/user");
+const jwt = require("jsonwebtoken");
 
 const {
   ERROR_NOT_FOUND,
@@ -55,6 +55,21 @@ function createUser(req, res) {
     .catch((err) => errorsHandler(err, res));
 }
 
+function login(req, res) {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'super-strong-secret',{ expiresIn: '7d' });
+
+      // вернём токен
+      res.send({ token });
+    })
+    .catch((err) => {
+      res.status(ERROR_UNAUTHORIZED).send({ message: err.message });
+    });
+}
+
 //Обновление данных пользователя
 function renovateUser(req, res) {
   const { name, about } = req.body;
@@ -83,6 +98,7 @@ module.exports = {
   getUsers,
   getUser,
   createUser,
+  login,
   renovateUser,
   renovateUserAvatar,
 };
