@@ -70,6 +70,20 @@ function login(req, res) {
     });
 }
 
+function getCurrentUser(req, res, next) {
+  const { _id } = req.user;
+  User.findById(_id)
+  .then((user) => {
+    if(!user) {
+      return Promise.reject(new Error('Пользователь не найден'));
+    }
+
+    return res.status(ERROR_OK).send(user);
+  }).catch((err) => {
+    next(err);
+  });
+}
+
 //Обновление данных пользователя
 function renovateUser(req, res) {
   const { name, about } = req.body;
@@ -99,6 +113,7 @@ module.exports = {
   getUser,
   createUser,
   login,
+  getCurrentUser,
   renovateUser,
   renovateUserAvatar,
 };
