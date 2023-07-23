@@ -1,5 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const auth = require('./middlewares/auth')
 const { createUser, login } = require("./controllers/users");
 const { ERROR_NOT_FOUND } = require("./utils/utils");
 
@@ -28,6 +29,8 @@ app.use((req, _res, next) => {
 
 app.use("/", require("./routes/users"));
 app.use("/", require("./routes/cards"));
+
+app.use(auth);
 
 app.use((_req, res) =>
   res.status(ERROR_NOT_FOUND).send({ message: "Страница не найдена" })
