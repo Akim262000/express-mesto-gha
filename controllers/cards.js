@@ -1,43 +1,48 @@
 const Card = require("../models/card");
-const {
-  ERROR_NOT_FOUND,
-  ERROR_OK,
-  ERROR_CREATE,
-  errorsHandler,
-} = require("../utils/utils");
+const { ERROR_OK, ERROR_CREATE } = require("../utils/utils");
+
+const ErrorBadRequest = require("../errors/ErrorBadRequest");
+const ErrorForbidden = require("../errors/ErrorForbidden");
+const ErrorNotFound = require("../errors/ErrorNotFound");
 
 //Получение всех карточек из базы данных
-function getCards(_req, res) {
+function getCards(_req, res, next) {
   Card.find({})
     .then((cards) => res.status(ERROR_OK).send(cards))
-    .catch((err) => errorsHandler(err, res));
+    .catch(next);
 }
 
 //Создание новой карточки
-function createCards(req, res) {
+function createCards(req, res, next) {
   const { name, link } = req.body;
 
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.status(ERROR_CREATE).send(card))
-    .catch((err) => errorsHandler(err, res));
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return next(new ErrorBadRequest("Переданы неверные данные"));
+      }
+      return next(err);
+    });
 }
 
 //Удаление карточки
-function deleteCard(req, res) {
+function deleteCard(req, res, next) {
   Card.findByIdAndRemove(req.params.cardId)
     .then((card) => {
       if (!card) {
-        return res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: "Карточка не найдена." });
+        return next(new ErrorNotFound("Карточка не найдена"));
+      }
+      if (card.owner.valueOf() !== req.user._id) {
+        return next(new ErrorForbidden("Нельзя удалить чужую карточку!"));
       }
       return res.status(ERROR_OK).send(card);
     })
-    .catch((err) => errorsHandler(err, res));
+    .catch(next);
 }
 
 //Добавление лайка карточке
-function likeCard(req, res) {
+function likeCard(req, res, next) {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
@@ -45,17 +50,15 @@ function likeCard(req, res) {
   )
     .then((card) => {
       if (!card) {
-        return res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: "Карточка не найдена." });
+        return next(new ErrorNotFound("Карточка не найдена"));
       }
       return res.status(ERROR_OK).send(card);
     })
-    .catch((err) => errorsHandler(err, res));
+    .catch(next);
 }
 
 //Удаление лайка с карточки
-function dislikeCard(req, res) {
+function dislikeCard(req, res, next) {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } }, // убрать _id из массива
@@ -63,13 +66,13 @@ function dislikeCard(req, res) {
   )
     .then((card) => {
       if (!card) {
-        return res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: "Карточка не найдена." });
+        return next(
+          new ErrorNotFound("Карточка не найдена. Лайк не удалось убрать")
+        );
       }
       return res.status(ERROR_OK).send(card);
     })
-    .catch((err) => errorsHandler(err, res));
+    .catch(next);
 }
 
 module.exports = {

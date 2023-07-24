@@ -2,41 +2,50 @@ const bcrypt = require("bcryptjs");
 const User = require("../models/user");
 const jwt = require("jsonwebtoken");
 
-const {
-  ERROR_NOT_FOUND,
-  ERROR_OK,
-  ERROR_CREATE,
-  errorsHandler,
-} = require("../utils/utils");
+const ErrorConflict = require("../errors/ErrorConflict");
+const ErrorBadRequest = require("../errors/ErrorBadRequest");
+const ErrorNotFound = require("../errors/ErrorNotFound");
+
+const { ERROR_OK, ERROR_CREATE } = require("../utils/utils");
 
 //Получение данных о всех пользователях
-function getUsers(_req, res) {
+function getUsers(_req, res, next) {
   User.find({})
     .then((users) => res.status(ERROR_OK).send(users))
-    .catch((err) => errorsHandler(err, res));
+    .catch(next);
 }
 
 //Получение данных о конкретном пользователе
-function getUser(req, res) {
+function getUser(req, res, next) {
   User.findById(req.params.userId)
     .then((user) => {
       if (!user) {
-        return res
-          .status(ERROR_NOT_FOUND)
-          .send({ message: "Пользователь не найден" });
+        return next(new ErrorNotFound("Пользователь не найден"));
       }
       return res.status(ERROR_OK).send(user);
     })
-    .catch((err) => errorsHandler(err, res));
+    .catch(next);
 }
 
 //Создание пользователя
-function createUser(req, res) {
-  bcrypt
-    .hash(req.body.password, 10)
+function createUser(req, res, next) {
+  const { email, password } = req.body;
+  if (email || password) {
+    return next(new ErrorBadRequest(`Неправильный логин или пароль`));
+  }
+
+  return User.findOne(email)
+    .then((user) => {
+      if (user) {
+        throw new ErrorConflict(
+          `Пользователь с ${email} уже существует`
+        );
+      }
+      return bcrypt.hash(req.body.password, 10);
+    })
     .then((hash) => {
       return User.create({
-        email: req.body.email,
+        email,
         password: hash,
         name: req.body.name,
         about: req.body.about,
@@ -52,40 +61,52 @@ function createUser(req, res) {
         email: user.email,
       });
     })
-    .catch((err) => errorsHandler(err, res));
+    .catch((err) => {
+      if (err.code === 11000) {
+        return next(
+          new ErrorConflict("Пользователь с таким email уже существует")
+        );
+      }
+      return next(err);
+    });
 }
 
-function login(req, res) {
+function login(req, res, next) {
   const { email, password } = req.body;
 
   return User.findUserByCredentials(email, password)
     .then((user) => {
-      const token = jwt.sign({ _id: user._id }, 'super-strong-secret',{ expiresIn: '7d' });
+      if (!user || !password) {
+        return next(new ErrorBadRequest("Неверный email или пароль"));
+      }
+      const token = jwt.sign(
+        { _id: user._id },
+        {
+          expiresIn: "7d",
+        }
+      );
 
       // вернём токен
       res.send({ token });
     })
-    .catch((err) => {
-      res.status(ERROR_UNAUTHORIZED).send({ message: err.message });
-    });
+    .catch(next);
 }
 
 function getCurrentUser(req, res, next) {
   const { _id } = req.user;
   User.findById(_id)
-  .then((user) => {
-    if(!user) {
-      return Promise.reject(new Error('Пользователь не найден'));
-    }
+    .then((user) => {
+      if (!user) {
+        return Promise.reject(new ErrorNotFound("Пользователь не найден"));
+      }
 
-    return res.status(ERROR_OK).send(user);
-  }).catch((err) => {
-    next(err);
-  });
+      return res.status(ERROR_OK).send(user);
+    })
+    .catch(next);
 }
 
 //Обновление данных пользователя
-function renovateUser(req, res) {
+function renovateUser(req, res, next) {
   const { name, about } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -93,11 +114,16 @@ function renovateUser(req, res) {
     { new: true, runValidators: true }
   )
     .then((user) => res.status(ERROR_OK).send(user))
-    .catch((err) => errorsHandler(err, res));
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return next(new ErrorBadRequest("Неверный тип данных"));
+      }
+      return next(err);
+    });
 }
 
 //Обновление аватара пользователя
-function renovateUserAvatar(req, res) {
+function renovateUserAvatar(req, res, next) {
   const { avatar } = req.body;
   User.findByIdAndUpdate(
     req.user._id,
@@ -105,7 +131,12 @@ function renovateUserAvatar(req, res) {
     { new: true, runValidators: true }
   )
     .then((user) => res.status(ERROR_OK).send(user))
-    .catch((err) => errorsHandler(err, res));
+    .catch((err) => {
+      if (err.name === "CastError") {
+        return next(new ErrorBadRequest("Неверная ссылка"));
+      }
+      return next(err);
+    });
 }
 
 module.exports = {
