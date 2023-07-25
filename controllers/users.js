@@ -37,11 +37,11 @@ function createUser(req, res, next) {
   return User.findOne(email)
     .then((user) => {
       if (user) {
-        throw new ErrorConflict(
+        return next (new ErrorConflict(
           `Пользователь с ${email} уже существует`
-        );
+        ));
       }
-      return bcrypt.hash(req.body.password, 10);
+      return bcrypt.hash(password, 10);
     })
     .then((hash) => {
       return User.create({
@@ -81,13 +81,14 @@ function login(req, res, next) {
       }
       const token = jwt.sign(
         { _id: user._id },
+        'some-secret-key',
         {
           expiresIn: "7d",
         }
       );
 
       // вернём токен
-      res.send({ token });
+      return res.send({ token });
     })
     .catch(next);
 }
@@ -97,7 +98,7 @@ function getCurrentUser(req, res, next) {
   User.findById(_id)
     .then((user) => {
       if (!user) {
-        return Promise.reject(new ErrorNotFound("Пользователь не найден"));
+        return next(new ErrorNotFound("Пользователь не найден"));
       }
 
       return res.status(ERROR_OK).send(user);
