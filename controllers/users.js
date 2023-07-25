@@ -30,21 +30,19 @@ function getUser(req, res, next) {
 //Создание пользователя
 function createUser(req, res, next) {
   const { email, password } = req.body;
-  if (email || password) {
-    return next(new ErrorBadRequest(`Неправильный логин или пароль`));
+  if (!email || !password) {
+    return new ErrorBadRequest(`Неправильный логин или пароль`);
   }
 
   return User.findOne(email)
     .then((user) => {
       if (user) {
-        return next (new ErrorConflict(
-          `Пользователь с ${email} уже существует`
-        ));
+        return new ErrorConflict(`Пользователь с ${email} уже существует`);
       }
       return bcrypt.hash(password, 10);
     })
     .then((hash) => {
-      return User.create({
+      User.create({
         email,
         password: hash,
         name: req.body.name,
@@ -53,7 +51,7 @@ function createUser(req, res, next) {
       });
     })
     .then((user) => {
-      return res.status(ERROR_CREATE).send({
+      res.status(ERROR_CREATE).send({
         name: user.name,
         about: user.about,
         avatar: user.avatar,
@@ -63,9 +61,7 @@ function createUser(req, res, next) {
     })
     .catch((err) => {
       if (err.code === 11000) {
-        return next(
-          new ErrorConflict("Пользователь с таким email уже существует")
-        );
+        return new ErrorConflict("Пользователь с таким email уже существует");
       }
       return next(err);
     });
@@ -79,13 +75,9 @@ function login(req, res, next) {
       if (!user || !password) {
         return next(new ErrorBadRequest("Неверный email или пароль"));
       }
-      const token = jwt.sign(
-        { _id: user._id },
-        'some-secret-key',
-        {
-          expiresIn: "7d",
-        }
-      );
+      const token = jwt.sign({ _id: user._id }, "some-secret-key", {
+        expiresIn: "7d",
+      });
 
       // вернём токен
       return res.send({ token });
