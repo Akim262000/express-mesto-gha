@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const auth = require('./middlewares/auth')
 const { createUser, login } = require("./controllers/users");
-const { ERROR_NOT_FOUND } = require("./utils/utils");
+const { signIn, signUp } = require("./middlewares/validations");
 
 const { PORT = 3000 } = process.env;
 
@@ -16,8 +16,8 @@ mongoose.connect("mongodb://127.0.0.1:27017/mestodb", {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.post('/signin', login);
-app.post('/signup', createUser);
+app.post('/signin', signIn, login);
+app.post('/signup', signUp, createUser);
 
 app.use("/", require("./routes/users"));
 app.use("/", require("./routes/cards"));
@@ -38,10 +38,6 @@ app.use((err, req, res, next) => {
     });
     next();
 }); 
-
-app.use((_req, res) =>
-  res.status(ERROR_NOT_FOUND).send({ message: "Страница не найдена" })
-);
 
 app.listen(PORT, () => {
   console.log(`Application is running on port ${PORT}`);
