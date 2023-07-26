@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const isEmail = require("validator/lib/isEmail");
 const bcrypt = require("bcryptjs");
+const ErrorUnauthorized = require("../errors/ErrorUnauthorized");
 
 const userSchema = new mongoose.Schema({
   email: {
@@ -34,8 +35,8 @@ const userSchema = new mongoose.Schema({
     default:
       "https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png",
       validate: {
-        validator: (v) => /^(https?:\/\/)(www\.)?([a-zA-Z0-9._]+)\.([a-z]{2,6}\.?)(\/[\w.]*)*\/?#?$/i.test(v),
-        message:'Неправильный формат URL адреса',
+        validator: (v) => /^(https?:\/\/)(www\.)?([a-zA-Z0-9._]+)\.([a-z]{2,6}\.?)(\/[\w-._/~:@!$&'()*+,;=]*)*\/?#?$/i.test(v),
+      message: 'Неправильный формат URL адреса',
         },
       },
 });
@@ -45,12 +46,12 @@ userSchema.statics.findUserByCredentials = (email, password) => {
     .select("+password")
     .then((user) => {
       if (!user) {
-        return Promise.reject(new Error("Неправильные почта или пароль"));
+        throw new ErrorUnauthorized('Неправильные почта или пароль');
       }
 
       return bcrypt.compare(password, user.password).then((matched) => {
         if (!matched) {
-          return Promise.reject(new Error("Неправильные почта или пароль"));
+          throw new ErrorUnauthorized('Неправильные почта или пароль');
         }
 
         return user;

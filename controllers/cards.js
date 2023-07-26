@@ -19,7 +19,7 @@ function createCards(req, res, next) {
   Card.create({ name, link, owner: req.user._id })
     .then((card) => res.status(ERROR_CREATE).send(card))
     .catch((err) => {
-      if (err.name === "CastError") {
+      if (err.name === "ValidationError") {
         return next(new ErrorBadRequest("Переданы неверные данные"));
       }
       return next(err);
@@ -46,7 +46,7 @@ function likeCard(req, res, next) {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-    { new: true }
+    { new: true },
   )
     .then((card) => {
       if (!card) {

@@ -30,38 +30,39 @@ function getUser(req, res, next) {
 //Создание пользователя
 function createUser(req, res, next) {
   const { email, password } = req.body;
+
   if (!email || !password) {
-    return new ErrorBadRequest(`Неправильный логин или пароль`);
+    throw new ErrorBadRequest(`Неправильный логин или пароль`);
   }
 
-  return User.findOne(email)
+  return User.findOne({email})
     .then((user) => {
       if (user) {
-        return new ErrorConflict(`Пользователь с ${email} уже существует`);
+        throw new ErrorConflict(`Пользователь с ${email} уже существует`);
       }
       return bcrypt.hash(password, 10);
     })
-    .then((hash) => {
+    .then((hash) => 
       User.create({
         email,
         password: hash,
         name: req.body.name,
         about: req.body.about,
         avatar: req.body.avatar,
-      });
-    })
-    .then((user) => {
+      })
+    )
+    .then((user) => 
       res.status(ERROR_CREATE).send({
         name: user.name,
         about: user.about,
         avatar: user.avatar,
         _id: user._id,
         email: user.email,
-      });
-    })
+      })
+    )
     .catch((err) => {
-      if (err.code === 11000) {
-        return new ErrorConflict("Пользователь с таким email уже существует");
+      if (err.name === 'ValidationError') {
+        next(new ErrorConflict("Пользователь с таким email уже существует"));
       }
       return next(err);
     });
@@ -108,8 +109,8 @@ function renovateUser(req, res, next) {
   )
     .then((user) => res.status(ERROR_OK).send(user))
     .catch((err) => {
-      if (err.name === "CastError") {
-        return next(new ErrorBadRequest("Неверный тип данных"));
+      if (err.name === "ValidationError") {
+        next(new ErrorBadRequest("Неверный тип данных"));
       }
       return next(err);
     });
@@ -125,8 +126,8 @@ function renovateUserAvatar(req, res, next) {
   )
     .then((user) => res.status(ERROR_OK).send(user))
     .catch((err) => {
-      if (err.name === "CastError") {
-        return next(new ErrorBadRequest("Неверная ссылка"));
+      if (err.name === "ValidationError") {
+        next(new ErrorBadRequest("Неверная ссылка"));
       }
       return next(err);
     });
