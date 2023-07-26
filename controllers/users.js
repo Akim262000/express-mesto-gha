@@ -42,7 +42,7 @@ function createUser(req, res, next) {
       }
       return bcrypt.hash(password, 10);
     })
-    .then((hash) => 
+    .then((hash) =>
       User.create({
         email,
         password: hash,
@@ -51,7 +51,7 @@ function createUser(req, res, next) {
         avatar: req.body.avatar,
       })
     )
-    .then((user) => 
+    .then((user) =>
       res.status(ERROR_CREATE).send({
         name: user.name,
         about: user.about,

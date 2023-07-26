@@ -16,4 +16,4 @@ const signUp = celebrate({
   }),
 });
 
-module.exports = { signIn, signUp };
+module.exports = { signUp, signIn };

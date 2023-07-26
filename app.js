@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const auth = require('./middlewares/auth')
 const { errors } = require('celebrate');
 const { createUser, login } = require("./controllers/users");
-const { signIn, signUp } = require("./middlewares/validations");
+const { signUp, signIn } = require("./middlewares/validations");
 const ErrorNotFound = require("./errors/ErrorNotFound");
 const errorHandler = require("./middlewares/errorHandler");
 
@@ -13,14 +13,14 @@ const app = express();
 
 mongoose.connect("mongodb://127.0.0.1:27017/mestodb", {
   useCreateIndex: true,
-  useUnifiedTopology: false
+  useUnifiedTopology: true
 });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.post('/signin', signIn, login);
 app.post('/signup', signUp, createUser);
+app.post('/signin', signIn, login);
 
 app.use(auth);
 // роуты, которым нужна авторизация
