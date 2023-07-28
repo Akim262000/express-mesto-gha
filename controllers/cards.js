@@ -26,17 +26,36 @@ function createCards(req, res, next) {
     });
 }
 
-//Удаление карточки
+// Удаление карточки
+// function deleteCard(req, res, next) {
+//   Card.findByIdAndRemove(req.params.cardId)
+//     .then((card) => {
+//       if (!card) {
+//         return next(new ErrorNotFound("Карточка не найдена"));
+//       }
+//       if (card.owner.valueOf() !== req.user._id) {
+//         return (new ErrorForbidden("Нельзя удалить чужую карточку!"));
+//       }
+//       return res.status(ERROR_OK).send(card);
+//     })
+//     .catch(next);
+// }
+
 function deleteCard(req, res, next) {
-  Card.findByIdAndRemove(req.params.cardId)
+  const { cardId } = req.params;
+  const { _id } = req.user;
+
+  Card.findById(cardId)
     .then((card) => {
       if (!card) {
         return next(new ErrorNotFound("Карточка не найдена"));
       }
-      if (card.owner.valueOf() !== req.user._id) {
+
+      if (!card.owner.equals(_id)) {
         return next(new ErrorForbidden("Нельзя удалить чужую карточку!"));
       }
-      return res.status(ERROR_OK).send(card);
+
+      Card.findByIdAndRemove(cardId).then(res.status(ERROR_OK).send(card));
     })
     .catch(next);
 }
@@ -46,7 +65,7 @@ function likeCard(req, res, next) {
   Card.findByIdAndUpdate(
     req.params.cardId,
     { $addToSet: { likes: req.user._id } }, // добавить _id в массив, если его там нет
-    { new: true },
+    { new: true }
   )
     .then((card) => {
       if (!card) {
