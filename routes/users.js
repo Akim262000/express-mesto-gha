@@ -27,10 +27,6 @@ router.get("/users/me", getCurrentUser);
 router.patch("/users/me", renovateUserValidation, renovateUser);
 
 //Обновление аватара пользователя
-router.patch(
-  "/users/me/avatar",
-  renovateUserAvatarValidation,
-  renovateUserAvatar
-);
+router.patch("/users/me/avatar", renovateUserAvatarValidation, renovateUserAvatar);
 
 module.exports = router;

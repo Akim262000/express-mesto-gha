@@ -1,4 +1,5 @@
 const { celebrate, Joi } = require("celebrate");
+const validator = require("validator");
 const ErrorBadRequest = require("../errors/ErrorBadRequest");
 
 const signIn = celebrate({
