@@ -88,6 +88,8 @@ function login(req, res, next) {
 
 function getCurrentUser(req, res, next) {
   const { _id } = req.user;
+  console.log(req.user)
+
   User.findById(_id)
     .then((user) => {
       if (!user) {

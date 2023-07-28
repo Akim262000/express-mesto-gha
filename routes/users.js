@@ -17,11 +17,11 @@ const {
 //Получение данных о всех пользователях
 router.get("/users", getUsers);
 
-//Получение данных о конкретном пользователе
-router.get("/users/:userId", userValidation, getUser);
-
 //Получение информации о текущем пользователе
 router.get("/users/me", getCurrentUser);
+
+//Получение данных о конкретном пользователе
+router.get("/users/:userId", userValidation, getUser);
 
 //Обновление данных пользователя
 router.patch("/users/me", renovateUserValidation, renovateUser);
