@@ -9,7 +9,7 @@ const ErrorNotFound = require("../errors/ErrorNotFound");
 const { ERROR_OK, ERROR_CREATE } = require("../utils/utils");
 
 //Получение данных о всех пользователях
-function getUsers(_req, res, next) {
+function getUsers(req, res, next) {
   User.find({})
     .then((users) => res.status(ERROR_OK).send(users))
     .catch(next);
@@ -38,7 +38,7 @@ function createUser(req, res, next) {
   return User.findOne({email})
     .then((user) => {
       if (user) {
-        throw new ErrorConflict(`Пользователь с ${email} уже существует`);
+        throw new ErrorConflict(`Пользователь с таким email уже существует`);
       }
       return bcrypt.hash(password, 10);
     })

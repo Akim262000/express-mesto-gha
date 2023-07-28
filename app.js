@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const auth = require('./middlewares/auth')
 const { errors } = require('celebrate');
-const { createUser, login } = require("./controllers/users");
+const { createUser, login, getUsers } = require("./controllers/users");
 const { signUp, signIn } = require("./middlewares/validations");
 const ErrorNotFound = require("./errors/ErrorNotFound");
 const errorHandler = require("./middlewares/errorHandler");
@@ -13,7 +13,7 @@ const app = express();
 
 mongoose.connect("mongodb://127.0.0.1:27017/mestodb", {
   useCreateIndex: true,
-  useUnifiedTopology: true
+  useUnifiedTopology: false
 });
 
 app.use(express.json());
@@ -23,14 +23,15 @@ app.post('/signup', signUp, createUser);
 app.post('/signin', signIn, login);
 
 app.use(auth);
+
 // роуты, которым нужна авторизация
 app.use('/', require('./routes/users'));
 app.use('/', require('./routes/cards'));
 
-// запрос к несуществующему роуту
-app.use('*', (req, res, next) => {
-  next(new ErrorNotFound('Страница не найдена'));
-});
+// // запрос к несуществующему роуту
+// app.use('*', (req, res, next) => {
+//   next(new ErrorNotFound('Страница не найдена'));
+// });
 
 app.use(errors());
 app.use(errorHandler);
