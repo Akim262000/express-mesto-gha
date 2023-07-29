@@ -35,13 +35,7 @@ function createUser(req, res, next) {
     throw new ErrorBadRequest(`Неправильный логин или пароль`);
   }
 
-  return User.findOne({email})
-    .then((user) => {
-      if (user) {
-        throw new ErrorConflict(`Пользователь с таким email уже существует`);
-      }
-      return bcrypt.hash(password, 10);
-    })
+    bcrypt.hash(password, 10)
     .then((hash) =>
       User.create({
         email,
@@ -61,8 +55,8 @@ function createUser(req, res, next) {
       })
     )
     .catch((err) => {
-      if (err.name === 'ValidationError') {
-        next(new ErrorConflict("Пользователь с таким email уже существует"));
+      if (err.code === 11000) {
+        return next(new ErrorConflict("Пользователь с таким email уже существует"));
       }
       return next(err);
     });
@@ -111,7 +105,7 @@ function renovateUser(req, res, next) {
     .then((user) => res.status(ERROR_OK).send(user))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        next(new ErrorBadRequest("Неверный тип данных"));
+        return next(new ErrorBadRequest("Неверный тип данных"));
       }
       return next(err);
     });
@@ -128,7 +122,7 @@ function renovateUserAvatar(req, res, next) {
     .then((user) => res.status(ERROR_OK).send(user))
     .catch((err) => {
       if (err.name === "ValidationError") {
-        next(new ErrorBadRequest("Неверная ссылка"));
+        return next(new ErrorBadRequest("Неверная ссылка"));
       }
       return next(err);
     });

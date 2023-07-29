@@ -27,20 +27,6 @@ function createCards(req, res, next) {
 }
 
 // Удаление карточки
-// function deleteCard(req, res, next) {
-//   Card.findByIdAndRemove(req.params.cardId)
-//     .then((card) => {
-//       if (!card) {
-//         return next(new ErrorNotFound("Карточка не найдена"));
-//       }
-//       if (card.owner.valueOf() !== req.user._id) {
-//         return (new ErrorForbidden("Нельзя удалить чужую карточку!"));
-//       }
-//       return res.status(ERROR_OK).send(card);
-//     })
-//     .catch(next);
-// }
-
 function deleteCard(req, res, next) {
   const { cardId } = req.params;
   const { _id } = req.user;
